@@ -34,7 +34,7 @@ function App() {
         todo: todo
       }, {
         headers: {
-          Authorization: authUsername + ":::" + authPassword
+          Authorization: localStorage.getItem("sessionId")
         }
       });
       alert ("todo added");
@@ -42,20 +42,24 @@ function App() {
       setAuthUsername("");
       setAuthPassword("");
     } catch (err) {
+      if (err.response.status === 401) {
+        alert ("session ended");
+        return setDivToShow("login");
+      }
       alert("No No");
     };
   };
 
   const login = async() => {
     try {
-      await http.post("http://localhost:3001/api/login", {}, {
+      const response = await http.post("http://localhost:3001/api/login", {}, {
         headers: {
           Authorization: authUsername + ":::" + authPassword
         }
       });
       setDivToShow("todos");
-      localStorage.setItem("user", authUsername);
-      localStorage.setItem("password", authPassword);
+      // igy itt csak a random generalt sessionId-t taroljuk a FE-en
+      localStorage.setItem("sessionId", response.data);
     } catch (err) {
       alert("Wrong username or password");
     };
@@ -64,20 +68,15 @@ function App() {
   const signout = async() => {
     setAuthPassword("");
     setAuthUsername("");
-    localStorage.removeItem("user", authUsername);
-    localStorage.removeItem("password", authPassword);
+    localStorage.removeItem("sessionId");
     setDivToShow("login")
   }
 
   useEffect(() => {
-    const user = localStorage.getItem("user", authUsername);
-    const password = localStorage.getItem("password", authPassword);
-    if (!user || !password) return;
-    setAuthUsername(user);
-    setAuthPassword(password);
+    const sessionId = localStorage.getItem("sessionId");
+    if (!sessionId) return;
     setDivToShow("todos");
-
-  })
+  }, []);
 
   return (
     <div className="App">

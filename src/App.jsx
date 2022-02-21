@@ -66,11 +66,21 @@ function App() {
   };
 
   const signout = async() => {
-    setAuthPassword("");
-    setAuthUsername("");
-    localStorage.removeItem("sessionId");
-    setDivToShow("login")
-  }
+    try {
+      await http.delete('http://localhost:3001/api/signout', {
+      headers: {
+        Authorization: localStorage.getItem('sessionId')
+      }
+      }, {})
+      setDivToShow("todos");
+    } catch (err) {
+    } finally {
+      setAuthPassword("");
+      setAuthUsername("");
+      localStorage.removeItem("sessionId");
+      setDivToShow("login")
+    }
+  };
 
   useEffect(() => {
     const sessionId = localStorage.getItem("sessionId");
